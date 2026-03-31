@@ -1,0 +1,46 @@
+{
+  "name": "roku-mcp",
+  "version": "0.1.0",
+  "description": "MCP server and CLI for AI agents to interact with Roku devices — inspect SceneGraph UI, send remote input, query device state",
+  "type": "module",
+  "bin": {
+    "roku-mcp": "./bin/roku-dev.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/danecodes/roku-mcp"
+  },
+  "author": "Dane Hesseldahl",
+  "exports": {
+    ".": "./dist/core/index.js",
+    "./mcp": "./dist/mcp/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/cli/index.ts",
+    "mcp": "tsx src/mcp/index.ts"
+  },
+  "keywords": [
+    "roku",
+    "ecp",
+    "mcp",
+    "ai",
+    "agent",
+    "testing",
+    "automation",
+    "scenegraph"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.1",
+    "chalk": "^5.4.1",
+    "commander": "^13.1.0",
+    "xml2js": "^0.6.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.0",
+    "@types/xml2js": "^0.4.14",
+    "tsx": "^4.21.0",
+    "typescript": "^5.8.0"
+  }
+}
