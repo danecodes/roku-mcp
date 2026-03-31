@@ -203,6 +203,61 @@ server.tool(
 );
 
 server.tool(
+  'roku_close_app',
+  'Close the currently running app by pressing the Home key.',
+  { _: z.string().optional().describe('unused') },
+  async () => {
+    await client.closeApp();
+    return { content: [{ type: 'text', text: 'App closed (Home pressed)' }] };
+  }
+);
+
+server.tool(
+  'roku_deep_link',
+  'Deep link into a specific piece of content in a channel. Launches the channel with contentId and optional mediaType parameters.',
+  {
+    channel_id: z.string().optional().describe('Channel ID (default: "dev")'),
+    content_id: z.string().describe('Content ID to deep link to'),
+    media_type: z.string().optional().describe('Media type (e.g. "episode", "movie", "series", "shortFormVideo")'),
+  },
+  async ({ channel_id, content_id, media_type }) => {
+    const id = channel_id ?? 'dev';
+    await client.deepLink(id, content_id, media_type);
+    return { content: [{ type: 'text', text: `Deep linked to ${content_id} in channel ${id}` }] };
+  }
+);
+
+server.tool(
+  'roku_volume',
+  'Control the Roku device volume.',
+  {
+    action: z.enum(['up', 'down', 'mute']).describe('Volume action'),
+    times: z.number().optional().describe('Number of times to repeat (for up/down, default: 1)'),
+  },
+  async ({ action, times }) => {
+    const count = times ?? 1;
+    for (let i = 0; i < count; i++) {
+      if (action === 'up') await client.volumeUp();
+      else if (action === 'down') await client.volumeDown();
+      else await client.volumeMute();
+    }
+    return { content: [{ type: 'text', text: `Volume ${action}${count > 1 ? ` x${count}` : ''}` }] };
+  }
+);
+
+server.tool(
+  'roku_sideload',
+  'Sideload a .zip package to the Roku device. Replaces the current dev channel.',
+  {
+    zip_path: z.string().describe('Path to the .zip package to sideload'),
+  },
+  async ({ zip_path }) => {
+    const result = await client.sideload(zip_path);
+    return { content: [{ type: 'text', text: result }] };
+  }
+);
+
+server.tool(
   'roku_screenshot',
   'Take a screenshot of the Roku device screen. Returns a PNG image and optionally saves to disk. Requires developer mode with a sideloaded app.',
   {

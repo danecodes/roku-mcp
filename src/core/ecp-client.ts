@@ -168,6 +168,49 @@ export class EcpClient {
     await this.post(`/input?${qs}`);
   }
 
+  async closeApp(): Promise<void> {
+    await this.keypress('Home');
+  }
+
+  async deepLink(
+    channelId: string,
+    contentId: string,
+    mediaType?: string
+  ): Promise<void> {
+    const params: Record<string, string> = { contentId };
+    if (mediaType) params.mediaType = mediaType;
+    await this.launch(channelId, params);
+  }
+
+  async volumeUp(): Promise<void> {
+    await this.keypress('VolumeUp');
+  }
+
+  async volumeDown(): Promise<void> {
+    await this.keypress('VolumeDown');
+  }
+
+  async volumeMute(): Promise<void> {
+    await this.keypress('VolumeMute');
+  }
+
+  async sideload(zipPath: string): Promise<string> {
+    const { execSync } = await import('child_process');
+    const auth = `rokudev:${this.devPassword}`;
+    const result = execSync(
+      `curl -s --digest --user ${auth} -F "mysubmit=Install" -F "archive=@${zipPath}" "http://${this.deviceIp}/plugin_install" --max-time 60`,
+      { maxBuffer: 10 * 1024 * 1024 },
+    );
+    const html = result.toString();
+    if (html.includes('Install Success')) {
+      return 'Install Success';
+    }
+    if (html.includes('Install Failure')) {
+      throw new Error('Sideload failed — check the package');
+    }
+    return 'Sideload completed';
+  }
+
   /* ---- Queries ---- */
 
   async queryDeviceInfo(): Promise<DeviceInfo> {
