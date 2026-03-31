@@ -59,11 +59,16 @@ Your agent now has these tools:
 | `roku_find_element` | Find elements by CSS-like selector |
 | `roku_press_key` | Send remote control key press (Select, Up, Down, etc.) |
 | `roku_type_text` | Type text into keyboard inputs |
+| `roku_screenshot` | Take a screenshot, optionally save to disk |
 | `roku_launch` | Launch a channel with optional deep link params |
+| `roku_deep_link` | Deep link directly into content by ID |
+| `roku_close_app` | Close the running app (press Home) |
+| `roku_sideload` | Deploy a .zip package to the device |
 | `roku_device_info` | Get device model, software version, network info |
 | `roku_active_app` | Get the currently running app |
 | `roku_media_player` | Get playback state (position, duration, format) |
 | `roku_installed_apps` | List all installed channels |
+| `roku_volume` | Volume up, down, or mute |
 | `roku_input` | Send custom input parameters to the running app |
 
 ### As a CLI
