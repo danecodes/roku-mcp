@@ -118,6 +118,34 @@ Find elements using CSS-like selectors against SceneGraph node names:
 | `AppButton:nth-child(1)` | First `AppButton` among siblings |
 | `CollectionModule + CollectionModule` | `CollectionModule` immediately after another |
 
+## Using it in chat
+
+You can talk to your Roku through your AI assistant. The agent uses the MCP tools to navigate, inspect, and screenshot the device:
+
+```
+You: Go to the browse screen and select the Action genre
+
+Agent: I'll navigate to the Browse screen. Let me press Back to reset focus,
+       then Left to open the nav menu.
+
+  → roku_press_key(key: "Back")
+  → roku_press_key(key: "Left")
+  → roku_ui_tree(depth: 4)
+
+Agent: I can see the nav menu. Let me find Browse and select it.
+
+  → roku_press_key(key: "Down", times: 2)
+  → roku_press_key(key: "Select")
+  → roku_press_key(key: "Down", times: 4)
+  → roku_press_key(key: "Select")
+
+Agent: We're on the Action genre list now.
+
+  → roku_screenshot(save_path: "./screenshots/action_genre.png")
+```
+
+The agent can see the UI tree, understand what's on screen, navigate to where it needs to go, and save screenshots — all through natural conversation.
+
 ## How it works
 
 Roku devices expose an HTTP API called [ECP (External Control Protocol)](https://developer.roku.com/docs/developer-program/dev-tools/external-control-api.md) on port 8060. This tool calls ECP endpoints directly — no WebDriver, no Appium, no Selenium, no Java.
