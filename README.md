@@ -12,18 +12,27 @@ Your coding agent can see what's on the Roku screen, send remote control input, 
 - **Launch apps** — start channels with deep link parameters
 - **Query state** — device info, media player, active app, installed apps
 
+## Configuration
+
+Set your Roku device IP address:
+
+- **MCP server:** Set `ROKU_DEVICE_IP` environment variable in your MCP config (see below)
+- **CLI:** Use `--device <ip>` flag (defaults to `192.168.0.30`)
+- **Screenshots:** Set `ROKU_DEV_PASSWORD` if your dev password isn't `rokudev`
+
 ## Quick start
 
 ### As an MCP server (Claude Code, Cursor, etc.)
 
-Add to your Claude Code settings:
+Add to your `.mcp.json` (project root or `~/.claude/.mcp.json` for global):
 
 ```json
 {
   "mcpServers": {
     "roku": {
+      "type": "stdio",
       "command": "npx",
-      "args": ["roku-mcp", "mcp"],
+      "args": ["tsx", "/path/to/roku-mcp/src/mcp/index.ts"],
       "env": {
         "ROKU_DEVICE_IP": "192.168.0.30"
       }
@@ -123,7 +132,7 @@ Find elements using CSS-like selectors against SceneGraph node names:
 You can talk to your Roku through your AI assistant. The agent uses the MCP tools to navigate, inspect, and screenshot the device:
 
 ```
-You: Go to the browse screen and select the Action genre
+You: Go to the browse screen, select the Action genre, and take a screenshot for me
 
 Agent: I'll navigate to the Browse screen. Let me press Back to reset focus,
        then Left to open the nav menu.
