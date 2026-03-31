@@ -247,9 +247,9 @@ server.tool(
 
 server.tool(
   'roku_sideload',
-  'Sideload a .zip package to the Roku device. Replaces the current dev channel.',
+  'Sideload a .zip package to the Roku device. Replaces the current dev channel. If no path is provided, look for the most recently modified .zip file in common build output directories like target/, build/, out/, or dist/.',
   {
-    zip_path: z.string().describe('Path to the .zip package to sideload'),
+    zip_path: z.string().describe('Path to the .zip package to sideload. If unsure, search for .zip files in target/, build/, out/, or dist/ directories and use the most recent one.'),
   },
   async ({ zip_path }) => {
     const result = await client.sideload(zip_path);
