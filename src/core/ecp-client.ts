@@ -211,6 +211,83 @@ export class EcpClient {
     return 'Sideload completed';
   }
 
+  /* ---- Console / Debug ---- */
+
+  /**
+   * Read output from the BrightScript debug console (port 8085).
+   *
+   * Connects via TCP, reads for `duration` seconds, then returns whatever
+   * came through. Useful for reading crash logs, print statements,
+   * and runtime errors.
+   */
+  async readConsole(options?: {
+    duration?: number;
+    filter?: string;
+  }): Promise<string> {
+    const { execSync } = await import('child_process');
+    const seconds = Math.ceil((options?.duration ?? 2000) / 1000);
+
+    try {
+      const buf = execSync(
+        `echo "" | nc -w ${seconds} ${this.deviceIp} 8085`,
+        { maxBuffer: 10 * 1024 * 1024, timeout: (seconds + 2) * 1000 },
+      );
+      const output = buf.toString('utf-8');
+      if (!options?.filter) return output;
+      return output
+        .split('\n')
+        .filter((line) =>
+          line.toLowerCase().includes(options.filter!.toLowerCase())
+        )
+        .join('\n');
+    } catch (err: unknown) {
+      // nc exits non-zero on timeout but still produces output
+      if (err && typeof err === 'object' && 'stdout' in err) {
+        const output = (err as { stdout: Buffer }).stdout.toString('utf-8');
+        if (!options?.filter) return output;
+        return output
+          .split('\n')
+          .filter((line) =>
+            line.toLowerCase().includes(options.filter!.toLowerCase())
+          )
+          .join('\n');
+      }
+      throw err;
+    }
+  }
+
+  /**
+   * Send a command to the BrightScript debug console.
+   *
+   * Common commands:
+   * - "bt" — backtrace (call stack after a crash)
+   * - "var" — show variables in current scope
+   * - "cont" — continue execution after a breakpoint
+   * - "step" — step to next line
+   * - "over" — step over
+   * - "out" — step out
+   */
+  async sendConsoleCommand(
+    command: string,
+    options?: { duration?: number }
+  ): Promise<string> {
+    const { execSync } = await import('child_process');
+    const seconds = Math.ceil((options?.duration ?? 2000) / 1000);
+
+    try {
+      const buf = execSync(
+        `echo "${command}" | nc -w ${seconds} ${this.deviceIp} 8085`,
+        { maxBuffer: 10 * 1024 * 1024, timeout: (seconds + 2) * 1000 },
+      );
+      return buf.toString('utf-8');
+    } catch (err: unknown) {
+      if (err && typeof err === 'object' && 'stdout' in err) {
+        return (err as { stdout: Buffer }).stdout.toString('utf-8');
+      }
+      throw err;
+    }
+  }
+
   /* ---- Queries ---- */
 
   async queryDeviceInfo(): Promise<DeviceInfo> {

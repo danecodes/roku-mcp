@@ -68,6 +68,8 @@ Your agent now has these tools:
 | `roku_active_app` | Get the currently running app |
 | `roku_media_player` | Get playback state (position, duration, format) |
 | `roku_installed_apps` | List all installed channels |
+| `roku_console_log` | Read BrightScript debug console output (errors, print statements, crashes) |
+| `roku_console_command` | Send debug commands (bt, var, cont, step, over, out) |
 | `roku_volume` | Volume up, down, or mute |
 | `roku_input` | Send custom input parameters to the running app |
 

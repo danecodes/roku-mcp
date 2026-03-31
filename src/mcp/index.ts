@@ -258,6 +258,38 @@ server.tool(
 );
 
 server.tool(
+  'roku_console_log',
+  'Read output from the BrightScript debug console (port 8085). Returns recent log output including print statements, runtime errors, and crash backtraces. Use this to debug issues, check for errors after navigating, or read app output.',
+  {
+    duration: z.number().optional().describe('How long to read in ms (default: 2000). Use longer durations to capture more output.'),
+    filter: z.string().optional().describe('Only return lines containing this text (case-insensitive). Useful for filtering by "error", "crash", a function name, etc.'),
+  },
+  async ({ duration, filter }) => {
+    const output = await client.readConsole({ duration, filter });
+    if (!output.trim()) {
+      return { content: [{ type: 'text', text: '(no console output)' }] };
+    }
+    return { content: [{ type: 'text', text: output }] };
+  }
+);
+
+server.tool(
+  'roku_console_command',
+  'Send a command to the BrightScript debug console. Common commands: "bt" (backtrace/call stack after crash), "var" (show variables), "cont" (continue after breakpoint), "step" (step to next line), "over" (step over), "out" (step out).',
+  {
+    command: z.string().describe('Debug command to send (e.g. "bt", "var", "cont")'),
+    duration: z.number().optional().describe('How long to read the response in ms (default: 2000)'),
+  },
+  async ({ command, duration }) => {
+    const output = await client.sendConsoleCommand(command, { duration });
+    if (!output.trim()) {
+      return { content: [{ type: 'text', text: '(no response)' }] };
+    }
+    return { content: [{ type: 'text', text: output }] };
+  }
+);
+
+server.tool(
   'roku_screenshot',
   'Take a screenshot of the Roku device screen. Returns a PNG image and optionally saves to disk. Requires developer mode with a sideloaded app.',
   {

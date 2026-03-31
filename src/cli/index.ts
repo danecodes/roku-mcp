@@ -97,6 +97,40 @@ ui.command('screenshot')
   });
 
 /* ------------------------------------------------------------------ */
+/*  console — BrightScript debug console                              */
+/* ------------------------------------------------------------------ */
+
+const consoleCmd = program.command('console').description('BrightScript debug console (port 8085)');
+
+consoleCmd
+  .command('log')
+  .description('Read recent console output')
+  .option('--duration <ms>', 'How long to read in ms (default: 2000)')
+  .option('--filter <text>', 'Only show lines containing this text')
+  .action(async (opts, cmd) => {
+    const deviceIp = cmd.parent!.parent!.opts().device;
+    const client = new EcpClient(deviceIp);
+    const output = await client.readConsole({
+      duration: opts.duration ? parseInt(opts.duration, 10) : 2000,
+      filter: opts.filter,
+    });
+    console.log(output || '(no output)');
+  });
+
+consoleCmd
+  .command('send <command>')
+  .description('Send a debug command (bt, var, cont, step, over, out)')
+  .option('--duration <ms>', 'How long to read response in ms (default: 2000)')
+  .action(async (command, opts, cmd) => {
+    const deviceIp = cmd.parent!.parent!.opts().device;
+    const client = new EcpClient(deviceIp);
+    const output = await client.sendConsoleCommand(command, {
+      duration: opts.duration ? parseInt(opts.duration, 10) : 2000,
+    });
+    console.log(output || '(no response)');
+  });
+
+/* ------------------------------------------------------------------ */
 /*  press — send key presses                                          */
 /* ------------------------------------------------------------------ */
 
