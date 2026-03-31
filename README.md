@@ -129,11 +129,6 @@ The key endpoint is `GET /query/app-ui` which returns the full SceneGraph node t
 - A Roku device in developer mode on the same network
 - Node.js 18+
 
-## Related
-
-- [roku-developer-guide](https://github.com/danecodes/roku-developer-guide) — Knowledge base that makes AI agents competent at Roku/BrightScript development
-- [roku-dotfiles](https://github.com/danecodes/roku-dotfiles) — VS Code configs, Claude Code settings, snippets for Roku development
-
 ## License
 
 MIT
