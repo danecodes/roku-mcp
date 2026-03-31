@@ -41,6 +41,16 @@ Add to your `.mcp.json` (project root or `~/.claude/.mcp.json` for global):
 }
 ```
 
+To auto-approve all Roku tool calls (so you don't get prompted each time), add to `~/.claude/settings.json`:
+
+```json
+{
+  "permissions": {
+    "allow": ["mcp__roku"]
+  }
+}
+```
+
 Your agent now has these tools:
 
 | Tool | Description |
