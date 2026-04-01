@@ -26,7 +26,7 @@ Set your Roku device IP address:
 
 ## Quick start
 
-### As an MCP server (Claude Code, Cursor, etc.)
+### As an MCP server (Claude Code, Cursor, Windsurf, etc.)
 
 Add to your `.mcp.json` (project root or `~/.claude/.mcp.json` for global):
 
@@ -53,6 +53,19 @@ To auto-approve all Roku tool calls (so you don't get prompted each time), add t
     "allow": ["mcp__roku"]
   }
 }
+```
+
+### As an MCP server (OpenAI Codex CLI)
+
+Add to `~/.codex/config.toml` (global) or `.codex/config.toml` (project-scoped):
+
+```toml
+[mcp_servers.roku]
+command = "npx"
+args = ["-y", "--package", "@danecodes/roku-mcp", "roku-mcp-server"]
+
+[mcp_servers.roku.env]
+ROKU_DEVICE_IP = "192.168.0.30"
 ```
 
 Your agent now has these tools:
