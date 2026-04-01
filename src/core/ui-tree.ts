@@ -253,6 +253,15 @@ function matchesToken(node: UiNode, token: SelectorToken): boolean {
   return true;
 }
 
+export function findFocused(node: UiNode): UiNode | undefined {
+  if (node.attrs.focused === 'true') return node;
+  for (const child of node.children) {
+    const found = findFocused(child);
+    if (found) return found;
+  }
+  return undefined;
+}
+
 function collectAll(node: UiNode): UiNode[] {
   const result: UiNode[] = [node];
   for (const child of node.children) {

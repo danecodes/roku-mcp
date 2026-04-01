@@ -32,7 +32,7 @@ Add to your `.mcp.json` (project root or `~/.claude/.mcp.json` for global):
     "roku": {
       "type": "stdio",
       "command": "npx",
-      "args": ["tsx", "/path/to/roku-mcp/src/mcp/index.ts"],
+      "args": ["-y", "--package", "@danecodes/roku-mcp", "roku-mcp-server"],
       "env": {
         "ROKU_DEVICE_IP": "192.168.0.30"
       }
@@ -53,6 +53,8 @@ To auto-approve all Roku tool calls (so you don't get prompted each time), add t
 
 Your agent now has these tools:
 
+**Device control**
+
 | Tool | Description |
 |------|-------------|
 | `roku_ui_tree` | Get the full SceneGraph UI tree — see what's on screen |
@@ -72,6 +74,30 @@ Your agent now has these tools:
 | `roku_console_command` | Send debug commands (bt, var, cont, step, over, out) |
 | `roku_volume` | Volume up, down, or mute |
 | `roku_input` | Send custom input parameters to the running app |
+
+**Test runner (Shift Left)**
+
+| Tool | Description |
+|------|-------------|
+| `roku_wait_for` | Poll until a selector appears on screen with configurable timeout — use after navigation |
+| `roku_assert_element` | Assert an element exists, is focused, or has a specific attribute value — returns pass/fail JSON |
+| `roku_sideload_and_watch` | Sideload a zip + watch console for errors/crashes — returns CI-ready pass/fail report |
+| `roku_smoke_test` | Launch app, verify UI renders, optionally verify playback — full pass/fail with step detail |
+
+**Agent efficiency**
+
+| Tool | Description |
+|------|-------------|
+| `roku_focused_element` | Return only the currently focused element — token-efficient alternative to full tree scan |
+| `roku_screen_name` | Infer the current screen name from the SceneGraph root component |
+| `roku_console_watch` | Monitor console for a pattern match during a time window — pass/fail with matching lines |
+
+**Shift Left quality gates**
+
+| Tool | Description |
+|------|-------------|
+| `roku_cert_preflight` | Run Roku cert failure checklist (back nav, Home exit, relaunch, error scan) |
+| `roku_chanperf_sample` | Sample CPU usage via chanperf for a configurable duration — high watermark + pass/fail |
 
 ### As a CLI
 
@@ -143,6 +169,73 @@ Find elements using CSS-like selectors against SceneGraph node names:
 | `LayoutGroup > AppLabel` | `AppLabel` that is a direct child of `LayoutGroup` |
 | `AppButton:nth-child(1)` | First `AppButton` among siblings |
 | `CollectionModule + CollectionModule` | `CollectionModule` immediately after another |
+
+## Smoke test demo
+
+Point a coding agent at a dev build and it will sideload, test, and report — screenshot the output and send it to your manager.
+
+```
+You: Sideload the build at ./target/crunchyroll-dev.zip and run a smoke test.
+     Deep link to content ID "GG5H5XQ7R" (episode) and verify playback starts.
+
+Agent: I'll sideload the build and watch the console for errors first.
+
+  → roku_sideload_and_watch(zip_path: "./target/crunchyroll-dev.zip", duration: 30000)
+
+  {
+    "passed": true,
+    "message": "PASS: Install Success — no errors in 30s of console output",
+    "sideload_result": "Install Success",
+    "errors": [],
+    "crashes": [],
+    "exceptions": []
+  }
+
+Agent: Clean install. Now running the smoke test with playback verification.
+
+  → roku_smoke_test(
+      content_id: "GG5H5XQ7R",
+      media_type: "episode",
+      ui_timeout: 15000,
+      playback_timeout: 30000
+    )
+
+  {
+    "passed": true,
+    "message": "PASS: App launched, UI rendered, and playback started",
+    "steps": [
+      { "name": "launch",     "passed": true, "message": "Deep linked to \"GG5H5XQ7R\" in channel dev" },
+      { "name": "ui_visible", "passed": true, "message": "UI rendered after 2340ms", "elapsed_ms": 2340 },
+      { "name": "playback",   "passed": true, "message": "Player reached \"play\" after 8710ms", "elapsed_ms": 8710 }
+    ],
+    "player_state": {
+      "state": "play",
+      "error": false,
+      "position": "00:00:08",
+      "duration": "00:42:17"
+    }
+  }
+
+Agent: All green. Build sideloaded cleanly, UI rendered in 2.3s, playback started in 8.7s.
+```
+
+You can also run this entirely from the CLI for CI integration:
+
+```bash
+# Sideload and watch for errors
+npx roku-dev test sideload-watch ./target/build.zip --duration 30000
+
+# Full smoke test with playback verification
+npx roku-dev test smoke --content-id GG5H5XQ7R --media-type episode
+
+# Run cert preflight checklist before submission
+npx roku-dev test cert-preflight
+
+# Sample CPU during playback
+npx roku-dev test chanperf --duration 15000 --threshold 70
+```
+
+All test commands exit with code 1 on failure, making them CI-friendly.
 
 ## Using it in chat
 

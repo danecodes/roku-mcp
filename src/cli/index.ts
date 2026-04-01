@@ -7,7 +7,17 @@ import {
   findElements,
   formatTree,
   formatTreePlain,
+  findFocused,
 } from '../core/ui-tree.js';
+import {
+  sleep,
+  waitFor,
+  assertElement,
+  sideloadAndWatch,
+  smokeTest,
+  certPreflight,
+  chanperfSample,
+} from '../core/tool-handlers.js';
 
 const program = new Command();
 
@@ -81,6 +91,33 @@ ui.command('source')
     const client = new EcpClient(deviceIp);
     const xml = await client.queryAppUi();
     console.log(xml);
+  });
+
+ui.command('focused')
+  .description('Show the currently focused element')
+  .option('--plain', 'No color output')
+  .action(async (opts, cmd) => {
+    const deviceIp = cmd.parent!.parent!.opts().device;
+    const client = new EcpClient(deviceIp);
+    const xml = await client.queryAppUi();
+    const tree = await parseUiXml(xml);
+    const focused = findFocused(tree);
+    if (!focused) {
+      console.log('(no focused element)');
+      return;
+    }
+    const format = opts.plain ? formatTreePlain : formatTree;
+    console.log(format(focused, { maxDepth: 0, allAttrs: true }));
+  });
+
+ui.command('screen')
+  .description('Print the current screen/component name')
+  .action(async (_opts, cmd) => {
+    const deviceIp = cmd.parent!.parent!.opts().device;
+    const client = new EcpClient(deviceIp);
+    const xml = await client.queryAppUi();
+    const tree = await parseUiXml(xml);
+    console.log(tree.tag);
   });
 
 ui.command('screenshot')
@@ -226,6 +263,111 @@ info
     const state = await client.queryMediaPlayer();
     console.log(state);
   });
+
+/* ------------------------------------------------------------------ */
+/*  test — shift left test runner                                     */
+/* ------------------------------------------------------------------ */
+
+const test = program.command('test').description('Shift Left test runner tools');
+
+test
+  .command('wait <selector>')
+  .description('Poll until a SceneGraph element appears (or timeout)')
+  .option('--timeout <ms>', 'Max wait in ms', parseInt, 10000)
+  .option('--interval <ms>', 'Poll interval in ms', parseInt, 500)
+  .action(async (selector, opts, cmd) => {
+    const deviceIp = cmd.parent!.parent!.opts().device;
+    const client = new EcpClient(deviceIp);
+    try {
+      const result = await waitFor(client, selector, { timeout: opts.timeout, interval: opts.interval });
+      console.log(JSON.stringify(result, null, 2));
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error(JSON.stringify({ passed: false, message: msg }, null, 2));
+      process.exit(1);
+    }
+  });
+
+test
+  .command('assert <selector>')
+  .description('Assert element exists, is focused, or has an attribute value')
+  .option('--assertion <type>', 'exists | focused | attribute (default: exists)', 'exists')
+  .option('--attr-name <name>', 'Attribute name (for assertion=attribute)')
+  .option('--attr-value <value>', 'Expected attribute value (for assertion=attribute)')
+  .action(async (selector, opts, cmd) => {
+    const deviceIp = cmd.parent!.parent!.opts().device;
+    const client = new EcpClient(deviceIp);
+    const result = await assertElement(client, selector, opts.assertion, opts.attrName, opts.attrValue);
+    console.log(JSON.stringify(result, null, 2));
+    if (!result.passed) process.exit(1);
+  });
+
+test
+  .command('sideload-watch <zip>')
+  .description('Sideload a zip and watch the console for errors')
+  .option('--duration <ms>', 'Console watch duration in ms', parseInt, 30000)
+  .action(async (zip, opts, cmd) => {
+    const deviceIp = cmd.parent!.parent!.opts().device;
+    const client = new EcpClient(deviceIp, 8060, { devPassword: cmd.parent!.parent!.opts().password ?? 'rokudev' });
+    console.error(`Sideloading ${zip}...`);
+    const result = await sideloadAndWatch(client, zip, { duration: opts.duration });
+    console.log(JSON.stringify(result, null, 2));
+    if (!result.passed) process.exit(1);
+  });
+
+test
+  .command('smoke')
+  .description('Smoke test: launch app, verify UI, optionally verify playback')
+  .option('--channel <id>', 'Channel ID (default: dev)', 'dev')
+  .option('--content-id <id>', 'Deep link content ID for playback check')
+  .option('--media-type <type>', 'Media type for deep link (e.g. episode)')
+  .option('--ui-timeout <ms>', 'Max ms to wait for UI', parseInt, 15000)
+  .option('--playback-timeout <ms>', 'Max ms to wait for playback', parseInt, 30000)
+  .action(async (opts, cmd) => {
+    const deviceIp = cmd.parent!.parent!.opts().device;
+    const client = new EcpClient(deviceIp);
+    const result = await smokeTest(client, {
+      channelId: opts.channel,
+      contentId: opts.contentId,
+      mediaType: opts.mediaType,
+      uiTimeout: opts.uiTimeout,
+      playbackTimeout: opts.playbackTimeout,
+    });
+    console.log(JSON.stringify(result, null, 2));
+    if (!result.passed) process.exit(1);
+  });
+
+test
+  .command('cert-preflight')
+  .description('Run Roku cert failure checklist against the live running app')
+  .option('--channel <id>', 'Dev channel ID (default: dev)', 'dev')
+  .action(async (opts, cmd) => {
+    const deviceIp = cmd.parent!.parent!.opts().device;
+    const client = new EcpClient(deviceIp);
+    const result = await certPreflight(client, opts.channel);
+    console.log(JSON.stringify(result, null, 2));
+    if (!result.passed) process.exit(1);
+  });
+
+test
+  .command('chanperf')
+  .description('Sample chanperf CPU usage and report high watermark/average')
+  .option('--duration <ms>', 'Sampling duration in ms', parseInt, 10000)
+  .option('--interval <ms>', 'Poll interval in ms', parseInt, 1000)
+  .option('--threshold <pct>', 'Max acceptable average CPU %', parseInt, 80)
+  .action(async (opts, cmd) => {
+    const deviceIp = cmd.parent!.parent!.opts().device;
+    const client = new EcpClient(deviceIp);
+    console.error(`Sampling chanperf for ${opts.duration / 1000}s...`);
+    const result = await chanperfSample(client, {
+      duration: opts.duration,
+      interval: opts.interval,
+      cpuThreshold: opts.threshold,
+    });
+    console.log(JSON.stringify(result, null, 2));
+    if (!result.passed) process.exit(1);
+  });
+
 
 /* ------------------------------------------------------------------ */
 /*  Run                                                               */

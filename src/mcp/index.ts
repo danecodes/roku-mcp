@@ -13,10 +13,20 @@ import { z } from 'zod';
 import { EcpClient, Key } from '../core/ecp-client.js';
 import {
   parseUiXml,
-  findElement,
   findElements,
   formatTreePlain,
 } from '../core/ui-tree.js';
+import {
+  waitFor,
+  assertElement,
+  sideloadAndWatch,
+  smokeTest,
+  focusedElement,
+  screenName,
+  consoleWatch,
+  certPreflight,
+  chanperfSample,
+} from '../core/tool-handlers.js';
 
 /* ------------------------------------------------------------------ */
 /*  Server setup                                                      */
@@ -322,6 +332,143 @@ server.tool(
     }
 
     return { content };
+  }
+);
+
+/* ------------------------------------------------------------------ */
+/*  Priority 1 — Test runner tools                                    */
+/* ------------------------------------------------------------------ */
+
+server.tool(
+  'roku_wait_for',
+  'Poll until a SceneGraph element matching a selector appears on screen, or a timeout is reached. Returns structured JSON with the element if found; throws a descriptive error on timeout. Use before asserting state after navigation.',
+  {
+    selector: z.string().describe('CSS-like selector to wait for (e.g. "VideoPlayer", "AppButton#play_button")'),
+    timeout: z.number().optional().describe('Max time to wait in ms (default: 10000)'),
+    interval: z.number().optional().describe('Poll interval in ms (default: 500)'),
+  },
+  async ({ selector, timeout, interval }) => {
+    const result = await waitFor(client, selector, { timeout, interval });
+    return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+  }
+);
+
+server.tool(
+  'roku_assert_element',
+  'Assert that a SceneGraph element matching a selector exists, is focused, or has a specific attribute value. Returns structured pass/fail JSON with a human-readable message.',
+  {
+    selector: z.string().describe('CSS-like selector to match'),
+    assertion: z.enum(['exists', 'focused', 'attribute']).optional().describe('"exists" (default) — element is in the tree. "focused" — element has focused="true". "attribute" — element has a specific attribute value.'),
+    attribute_name: z.string().optional().describe('Attribute to check (required when assertion is "attribute")'),
+    attribute_value: z.string().optional().describe('Expected attribute value (required when assertion is "attribute")'),
+  },
+  async ({ selector, assertion, attribute_name, attribute_value }) => {
+    const result = await assertElement(client, selector, assertion, attribute_name, attribute_value);
+    return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+  }
+);
+
+server.tool(
+  'roku_sideload_and_watch',
+  'Deploy a .zip package to the device, then monitor the BrightScript debug console for errors, crashes, and exceptions. Returns a structured pass/fail report suitable for CI.',
+  {
+    zip_path: z.string().describe('Path to the .zip package to sideload'),
+    duration: z.number().optional().describe('How long to watch the console after sideload in ms (default: 30000)'),
+    channel_id: z.string().optional().describe('Channel to launch after sideload (default: "dev")'),
+  },
+  async ({ zip_path, duration, channel_id }) => {
+    const result = await sideloadAndWatch(client, zip_path, { duration, channelId: channel_id });
+    return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+  }
+);
+
+server.tool(
+  'roku_smoke_test',
+  'Run a standard smoke test: launch the app, verify the UI loads, and optionally verify playback starts after a deep link. Returns structured pass/fail JSON with per-step detail, suitable for CI pipelines.',
+  {
+    channel_id: z.string().optional().describe('Channel to test (default: "dev")'),
+    content_id: z.string().optional().describe('Content ID to deep link to for playback verification. If omitted, only verifies the app launches and UI renders.'),
+    media_type: z.string().optional().describe('Media type for deep link (e.g. "episode", "movie")'),
+    ui_timeout: z.number().optional().describe('Max ms to wait for UI to appear after launch (default: 15000)'),
+    playback_timeout: z.number().optional().describe('Max ms to wait for player to reach "play" state (default: 30000)'),
+  },
+  async ({ channel_id, content_id, media_type, ui_timeout, playback_timeout }) => {
+    const result = await smokeTest(client, {
+      channelId: channel_id,
+      contentId: content_id,
+      mediaType: media_type,
+      uiTimeout: ui_timeout,
+      playbackTimeout: playback_timeout,
+    });
+    return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+  }
+);
+
+/* ------------------------------------------------------------------ */
+/*  Priority 2 — Agent efficiency tools                               */
+/* ------------------------------------------------------------------ */
+
+server.tool(
+  'roku_focused_element',
+  'Return the currently focused SceneGraph element and its attributes without scanning the whole tree. More token-efficient than roku_ui_tree when you only need to know what has focus.',
+  { _: z.string().optional().describe('unused') },
+  async () => {
+    const text = await focusedElement(client);
+    return { content: [{ type: 'text', text }] };
+  }
+);
+
+server.tool(
+  'roku_screen_name',
+  'Infer what screen the app is currently on based on the SceneGraph root component name. Returns a string like "HomePage", "SeriesDetailPage", or "VideoPlayer". Use this for lightweight screen detection without reading the full tree.',
+  { _: z.string().optional().describe('unused') },
+  async () => {
+    const text = await screenName(client);
+    return { content: [{ type: 'text', text }] };
+  }
+);
+
+server.tool(
+  'roku_console_watch',
+  'Monitor the BrightScript debug console for a specific string pattern during a defined window. Returns pass/fail plus any matching lines. By default passes when the pattern is NOT found (useful for asserting no errors). Set expect_match=true to pass when the pattern IS found.',
+  {
+    pattern: z.string().describe('String to watch for (case-insensitive)'),
+    duration: z.number().optional().describe('How long to monitor in ms (default: 5000)'),
+    expect_match: z.boolean().optional().describe('Pass when pattern IS found (default: false — pass when NOT found)'),
+  },
+  async ({ pattern, duration, expect_match }) => {
+    const result = await consoleWatch(client, pattern, { duration, expectMatch: expect_match });
+    return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+  }
+);
+
+/* ------------------------------------------------------------------ */
+/*  Priority 3 — Shift Left tools                                     */
+/* ------------------------------------------------------------------ */
+
+server.tool(
+  'roku_cert_preflight',
+  'Run a checklist of known Roku certification failure patterns against the live running app. Checks for existing BrightScript errors, back navigation crashes, clean Home exit, and successful relaunch. Returns a structured report.',
+  {
+    channel_id: z.string().optional().describe('Dev channel ID (default: "dev")'),
+  },
+  async ({ channel_id }) => {
+    const result = await certPreflight(client, channel_id);
+    return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+  }
+);
+
+server.tool(
+  'roku_chanperf_sample',
+  'Poll the chanperf ECP endpoint on a loop for a configurable duration, returning CPU high watermark, average, and a pass/fail verdict against a configurable threshold. Run this while the agent is navigating or during playback to measure performance.',
+  {
+    duration: z.number().optional().describe('Total sampling duration in ms (default: 10000)'),
+    interval: z.number().optional().describe('Poll interval in ms (default: 1000)'),
+    cpu_threshold: z.number().optional().describe('Max acceptable average CPU percentage 0–100 (default: 80)'),
+  },
+  async ({ duration, interval, cpu_threshold }) => {
+    const result = await chanperfSample(client, { duration, interval, cpuThreshold: cpu_threshold });
+    return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
   }
 );
 

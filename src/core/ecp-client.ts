@@ -59,6 +59,13 @@ export interface InstalledApp {
   name: string;
 }
 
+export interface ChanperfSample {
+  cpuUser: number;
+  cpuSystem: number;
+  memAnon: number;
+  memFile: number;
+}
+
 /* ------------------------------------------------------------------ */
 /*  Keys                                                              */
 /* ------------------------------------------------------------------ */
@@ -361,6 +368,24 @@ export class EcpClient {
 
   async queryAppUi(): Promise<string> {
     return this.get('/query/app-ui');
+  }
+
+  async queryChanperf(): Promise<ChanperfSample> {
+    const xml = await this.get('/query/chanperf');
+    const parsed = await parseStringPromise(xml, {
+      explicitArray: false,
+      mergeAttrs: true,
+    });
+    const plugin = parsed.chanperf?.plugin;
+    if (!plugin) {
+      return { cpuUser: 0, cpuSystem: 0, memAnon: 0, memFile: 0 };
+    }
+    return {
+      cpuUser: parseInt(plugin.cpu?.user ?? '0', 10),
+      cpuSystem: parseInt(plugin.cpu?.system ?? '0', 10),
+      memAnon: parseInt(plugin.memory?.anon ?? '0', 10),
+      memFile: parseInt(plugin.memory?.file ?? '0', 10),
+    };
   }
 
   /* ---- Screenshot ---- */
