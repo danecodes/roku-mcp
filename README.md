@@ -55,6 +55,30 @@ To auto-approve all Roku tool calls (so you don't get prompted each time), add t
 }
 ```
 
+### As an MCP server (GitHub Copilot / VS Code)
+
+Copilot requires the HTTP transport. Start the server in a terminal first:
+
+```bash
+ROKU_DEVICE_IP=192.168.0.30 npx --package @danecodes/roku-mcp roku-mcp-http
+# roku-mcp HTTP server running at http://localhost:3141/mcp
+```
+
+Then add to `.vscode/mcp.json` in your project:
+
+```json
+{
+  "servers": {
+    "roku": {
+      "type": "http",
+      "url": "http://localhost:3141/mcp"
+    }
+  }
+}
+```
+
+Run on a custom port with `ROKU_MCP_PORT=8888`.
+
 ### As an MCP server (OpenAI Codex CLI)
 
 Add to `~/.codex/config.toml` (global) or `.codex/config.toml` (project-scoped):
