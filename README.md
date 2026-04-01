@@ -1,5 +1,9 @@
 # roku-mcp
 
+[![npm version](https://img.shields.io/npm/v/@danecodes/roku-mcp)](https://www.npmjs.com/package/@danecodes/roku-mcp)
+[![CI](https://github.com/danecodes/roku-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/danecodes/roku-mcp/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 MCP server and CLI that lets AI agents (and developers) interact with Roku devices.
 
 Your coding agent can see what's on the Roku screen, send remote control input, and query device state — all through the [Model Context Protocol](https://modelcontextprotocol.io) or a simple CLI.
