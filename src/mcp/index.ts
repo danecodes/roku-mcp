@@ -11,7 +11,7 @@ const devPassword = process.env.ROKU_DEV_PASSWORD ?? 'rokudev';
 const client = new EcpClient(deviceIp, 8060, { devPassword });
 
 const server = new McpServer(
-  { name: 'roku-mcp', version: '0.1.4' },
+  { name: 'roku-mcp', version: '0.2.0' },
   { instructions: SERVER_INSTRUCTIONS },
 );
 registerTools(server, client);

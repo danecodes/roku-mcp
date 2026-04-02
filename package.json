@@ -1,6 +1,6 @@
 {
   "name": "@danecodes/roku-mcp",
-  "version": "0.1.4",
+  "version": "0.2.0",
   "description": "MCP server and CLI for AI agents to interact with Roku devices — inspect SceneGraph UI, send remote input, query device state",
   "type": "module",
   "bin": {
