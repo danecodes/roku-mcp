@@ -21,7 +21,7 @@ import {
 export function registerTools(server: McpServer, client: EcpClient): void {
   server.tool(
     'roku_ui_tree',
-    'Get the current SceneGraph UI tree from the Roku device. Returns a structured text representation of all visible nodes with their attributes (name, text, focused, visible, opacity). Use this to understand what is currently displayed on screen.',
+    'Get the current SceneGraph UI tree from the Roku device. Returns a structured text representation of all visible nodes with their attributes (name, text, focused, visible, opacity). WARNING: This returns the full SceneGraph tree which can be thousands of lines. Prefer roku_screenshot (visual check), roku_focused_element (what is selected), or roku_find_element (targeted query) for routine checks. Only use this for initial orientation on an unfamiliar screen or when you are completely lost.',
     {
       depth: z.number().optional().describe('Max depth to display (default: unlimited)'),
       all_attrs: z.boolean().optional().describe('Show all attributes, not just key ones'),

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<component name="AboutScreen" extends="Group">
+  <children>
+    <Label id="aboutTitle"
+           text="About"
+           font="font:LargeBoldSystemFont"
+           color="0xFFFFFFFF"
+           translation="[400, 100]" />
+    <Label id="versionLabel"
+           text="roku-mcp test app v1.0.0"
+           font="font:MediumSystemFont"
+           color="0xFFFFFFFF"
+           translation="[400, 200]" />
+    <Label id="descriptionLabel"
+           text="A test app for validating roku-mcp agent navigation"
+           font="font:SmallSystemFont"
+           color="0xAAAAABFF"
+           translation="[400, 280]" />
+  </children>
+</component>

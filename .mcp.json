@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "roku": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["tsx", "src/mcp/index.ts"],
+      "env": {
+        "ROKU_DEVICE_IP": "YOUR_ROKU_IP"
+      }
+    }
+  }
+}

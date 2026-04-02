@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<component name="DeepLinkScreen" extends="Group">
+  <interface>
+    <field id="contentId" type="string" value="" />
+    <field id="mediaType" type="string" value="" />
+  </interface>
+  <script type="text/brightscript" uri="DeepLinkScreen.brs" />
+  <children>
+    <Label id="deepLinkTitle"
+           text="Deep Link Received"
+           font="font:LargeBoldSystemFont"
+           color="0xFFFFFFFF"
+           translation="[400, 100]" />
+    <Label id="contentIdLabel"
+           text=""
+           font="font:MediumSystemFont"
+           color="0x00BFFFFF"
+           translation="[400, 200]" />
+    <Label id="mediaTypeLabel"
+           text=""
+           font="font:MediumSystemFont"
+           color="0x00BFFFFF"
+           translation="[400, 280]" />
+  </children>
+</component>

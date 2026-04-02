@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<component name="NavMenu" extends="Group" initialFocus="menuList">
+  <interface>
+    <field id="selectedItem" type="string" value="" alwaysNotify="true" />
+  </interface>
+  <script type="text/brightscript" uri="NavMenu.brs" />
+  <children>
+    <Rectangle id="menuBackground" width="320" height="1080" color="0x222222FF" />
+    <LabelList id="menuList"
+               translation="[20, 100]"
+               itemSize="[280, 70]"
+               numRows="4"
+               color="0xFFFFFFFF"
+               focusedColor="0x00BFFFFF"
+               drawFocusFeedback="true"
+               wrap="false">
+    </LabelList>
+  </children>
+</component>

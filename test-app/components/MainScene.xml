@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<component name="MainScene" extends="Scene" initialFocus="contentArea">
+  <interface>
+    <field id="currentScreen" type="string" value="home" />
+    <field id="deepLinkContentId" type="string" value="" alwaysNotify="true" />
+    <field id="deepLinkMediaType" type="string" value="" />
+  </interface>
+  <script type="text/brightscript" uri="MainScene.brs" />
+  <children>
+    <Group id="root">
+      <NavMenu id="navMenu" visible="false" translation="[0, 0]" />
+      <Group id="contentArea" translation="[0, 0]">
+        <HomeScreen id="homeScreen" visible="true" />
+        <SearchScreen id="searchScreen" visible="false" />
+        <SettingsScreen id="settingsScreen" visible="false" />
+        <AboutScreen id="aboutScreen" visible="false" />
+        <DeepLinkScreen id="deepLinkScreen" visible="false" />
+      </Group>
+    </Group>
+  </children>
+</component>

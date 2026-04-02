@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<component name="HomeScreen" extends="Group">
+  <children>
+    <Label id="welcomeLabel"
+           text="Welcome to roku-mcp test app"
+           font="font:LargeBoldSystemFont"
+           color="0xFFFFFFFF"
+           translation="[400, 200]" />
+    <Label id="instructionLabel"
+           text="Press Left to open the navigation menu"
+           font="font:SmallSystemFont"
+           color="0xAAAAABFF"
+           translation="[400, 300]" />
+  </children>
+</component>

@@ -23,6 +23,8 @@
     "mcp": "tsx src/mcp/index.ts",
     "test": "vitest run",
     "test:watch": "vitest",
+    "build:test-app": "bash test-app/build.sh",
+    "test:integration": "npm run build:test-app && vitest run --config vitest.integration.config.ts",
     "prepublishOnly": "npm test && npm run build"
   },
   "files": [

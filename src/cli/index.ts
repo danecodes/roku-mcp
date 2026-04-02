@@ -18,6 +18,7 @@ import {
   certPreflight,
   chanperfSample,
 } from '../core/tool-handlers.js';
+import { CLAUDE_MD_SECTION } from '../instructions.js';
 
 const program = new Command();
 
@@ -368,6 +369,35 @@ test
     if (!result.passed) process.exit(1);
   });
 
+
+/* ------------------------------------------------------------------ */
+/*  init — add Roku instructions to CLAUDE.md                         */
+/* ------------------------------------------------------------------ */
+
+program
+  .command('init')
+  .description('Add Roku agent instructions to CLAUDE.md in the current directory')
+  .action(async () => {
+    const fs = await import('fs');
+    const path = await import('path');
+    const target = path.resolve('CLAUDE.md');
+
+    let existing = '';
+    try {
+      existing = fs.readFileSync(target, 'utf-8');
+    } catch {
+      // file doesn't exist yet
+    }
+
+    if (existing.includes('## Roku Device Control')) {
+      console.log('CLAUDE.md already has a Roku section — skipping.');
+      return;
+    }
+
+    const separator = existing && !existing.endsWith('\n') ? '\n\n' : existing ? '\n' : '';
+    fs.writeFileSync(target, existing + separator + CLAUDE_MD_SECTION);
+    console.log(`${existing ? 'Updated' : 'Created'} ${target} with Roku agent instructions.`);
+  });
 
 /* ------------------------------------------------------------------ */
 /*  Run                                                               */

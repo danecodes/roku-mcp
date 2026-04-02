@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<component name="SettingsScreen" extends="Group" initialFocus="settingsList">
+  <script type="text/brightscript" uri="SettingsScreen.brs" />
+  <children>
+    <Label id="settingsTitle"
+           text="Settings"
+           font="font:LargeBoldSystemFont"
+           color="0xFFFFFFFF"
+           translation="[400, 100]" />
+    <LabelList id="settingsList"
+               translation="[400, 200]"
+               itemSize="[600, 70]"
+               numRows="3"
+               color="0xFFFFFFFF"
+               focusedColor="0x00BFFFFF"
+               drawFocusFeedback="true" />
+  </children>
+</component>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<component name="SearchScreen" extends="Group" initialFocus="searchInput">
+  <script type="text/brightscript" uri="SearchScreen.brs" />
+  <children>
+    <Label id="searchTitle"
+           text="Search"
+           font="font:LargeBoldSystemFont"
+           color="0xFFFFFFFF"
+           translation="[400, 100]" />
+    <TextEditBox id="searchInput"
+                 translation="[400, 200]"
+                 width="600"
+                 hintText="Type to search..."
+                 textColor="0xFFFFFFFF"
+                 hintTextColor="0x888888FF" />
+    <Label id="searchResult"
+           text=""
+           font="font:MediumSystemFont"
+           color="0x00BFFFFF"
+           translation="[400, 320]" />
+  </children>
+</component>
