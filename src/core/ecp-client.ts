@@ -202,12 +202,15 @@ export class EcpClient {
   }
 
   async sideload(zipPath: string): Promise<string> {
-    const { execSync } = await import('child_process');
-    const auth = `rokudev:${this.devPassword}`;
-    const result = execSync(
-      `curl -s --digest --user ${auth} -F "mysubmit=Install" -F "archive=@${zipPath}" "http://${this.deviceIp}/plugin_install" --max-time 60`,
-      { maxBuffer: 10 * 1024 * 1024 },
-    );
+    const { execFileSync } = await import('child_process');
+    const result = execFileSync('curl', [
+      '-s', '--digest',
+      '--user', `rokudev:${this.devPassword}`,
+      '-F', 'mysubmit=Install',
+      '-F', `archive=@${zipPath}`,
+      `http://${this.deviceIp}/plugin_install`,
+      '--max-time', '60',
+    ], { maxBuffer: 10 * 1024 * 1024 });
     const html = result.toString();
     if (html.includes('Install Success')) {
       return 'Install Success';
@@ -231,14 +234,17 @@ export class EcpClient {
     duration?: number;
     filter?: string;
   }): Promise<string> {
-    const { execSync } = await import('child_process');
+    const { execFileSync } = await import('child_process');
     const seconds = Math.ceil((options?.duration ?? 2000) / 1000);
 
     try {
-      const buf = execSync(
-        `echo "" | nc -w ${seconds} ${this.deviceIp} 8085`,
-        { maxBuffer: 10 * 1024 * 1024, timeout: (seconds + 2) * 1000 },
-      );
+      const buf = execFileSync('nc', [
+        '-w', String(seconds), this.deviceIp, '8085',
+      ], {
+        maxBuffer: 10 * 1024 * 1024,
+        timeout: (seconds + 2) * 1000,
+        input: '\n',
+      });
       const output = buf.toString('utf-8');
       if (!options?.filter) return output;
       return output
@@ -278,14 +284,17 @@ export class EcpClient {
     command: string,
     options?: { duration?: number }
   ): Promise<string> {
-    const { execSync } = await import('child_process');
+    const { execFileSync } = await import('child_process');
     const seconds = Math.ceil((options?.duration ?? 2000) / 1000);
 
     try {
-      const buf = execSync(
-        `echo "${command}" | nc -w ${seconds} ${this.deviceIp} 8085`,
-        { maxBuffer: 10 * 1024 * 1024, timeout: (seconds + 2) * 1000 },
-      );
+      const buf = execFileSync('nc', [
+        '-w', String(seconds), this.deviceIp, '8085',
+      ], {
+        maxBuffer: 10 * 1024 * 1024,
+        timeout: (seconds + 2) * 1000,
+        input: command + '\n',
+      });
       return buf.toString('utf-8');
     } catch (err: unknown) {
       if (err && typeof err === 'object' && 'stdout' in err) {
@@ -315,11 +324,13 @@ export class EcpClient {
     const xml = await this.get('/query/active-app');
     const parsed = await parseStringPromise(xml, { explicitArray: false });
     const app = parsed['active-app'].app;
+    // On the Roku home screen, app may be a plain string or lack $ attributes
+    const attrs = app?.$;
     return {
-      id: app.$.id,
-      type: app.$.type,
-      version: app.$.version,
-      name: app._,
+      id: attrs?.id ?? '',
+      type: attrs?.type ?? 'home',
+      version: attrs?.version ?? '',
+      name: (typeof app === 'string' ? app : app?._ ) ?? 'Roku',
     };
   }
 
@@ -400,20 +411,25 @@ export class EcpClient {
    * @returns PNG image data as a Buffer
    */
   async takeScreenshot(): Promise<Buffer> {
-    const { execSync } = await import('child_process');
+    const { execFileSync } = await import('child_process');
     const devUrl = `http://${this.deviceIp}`;
     const auth = `rokudev:${this.devPassword}`;
 
     // Step 1: Trigger screenshot capture (discard HTML response)
-    execSync(
-      `curl -s --digest --user ${auth} -X POST -F mysubmit=Screenshot ${devUrl}/plugin_inspect -o /dev/null --max-time 15`,
-    );
+    execFileSync('curl', [
+      '-s', '--digest', '--user', auth,
+      '-X', 'POST', '-F', 'mysubmit=Screenshot',
+      `${devUrl}/plugin_inspect`,
+      '-o', '/dev/null', '--max-time', '15',
+    ]);
 
     // Step 2: Download the PNG
-    const buf = execSync(
-      `curl -s --digest --user ${auth} -o - "${devUrl}/pkgs/dev.png?time=${Date.now()}" --max-time 15`,
-      { maxBuffer: 50 * 1024 * 1024 },
-    );
+    const buf = execFileSync('curl', [
+      '-s', '--digest', '--user', auth,
+      '-o', '-',
+      `${devUrl}/pkgs/dev.png?time=${Date.now()}`,
+      '--max-time', '15',
+    ], { maxBuffer: 50 * 1024 * 1024 });
 
     if (buf.length < 1000) {
       throw new Error('Screenshot failed — is a dev channel sideloaded?');
