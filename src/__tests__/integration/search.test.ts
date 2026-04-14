@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import {
   createClient,
+  TEST_APP_ZIP,
   navigateToScreen,
   sleep,
   waitFor,
@@ -13,8 +14,8 @@ describe('Search / Text Input', () => {
 
   beforeAll(async () => {
     client = createClient();
-    // Launch dev channel (assumes already sideloaded by navigation test or manually)
-    await client.launch('dev');
+    // Ensure test app is sideloaded (can't depend on test execution order)
+    await client.sideload(TEST_APP_ZIP);
     await sleep(3000);
     await navigateToScreen(client, 'search');
     await waitFor(client, 'SearchScreen', { timeout: 5000 });

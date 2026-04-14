@@ -19,7 +19,7 @@ import {
   certPreflight,
   chanperfSample,
 } from '../../core/tool-handlers.js';
-import type { EcpClient } from '@danecodes/roku-ecp';
+import { type EcpClient, Key } from '@danecodes/roku-ecp';
 
 describe('All Tools Validation', () => {
   let client: EcpClient;
@@ -184,10 +184,10 @@ describe('All Tools Validation', () => {
 
   // ---- Tool 18: roku_volume ----
   it('roku_volume — controls device volume', async () => {
-    // Mute and unmute — verify no errors
-    await client.volumeMute();
+    // Mute and unmute via keypress — verify no errors
+    await client.keypress(Key.VolumeMute);
     await sleep(300);
-    await client.volumeMute(); // unmute
+    await client.keypress(Key.VolumeMute); // unmute
     expect(true).toBe(true);
   });
 

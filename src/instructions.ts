@@ -1,6 +1,21 @@
+import { readFileSync } from 'fs';
+import { resolve } from 'path';
+
+function loadAppContext(): string {
+  const filePath = process.env.ROKU_APP_CONTEXT ?? resolve(process.cwd(), 'roku-app.md');
+  try {
+    return readFileSync(filePath, 'utf-8');
+  } catch {
+    return '';
+  }
+}
+
 /**
  * Instructions sent to MCP clients on initialize.
  * Teaches agents HOW to use the Roku tools effectively.
+ *
+ * If a roku-app.md file exists in the working directory (or at ROKU_APP_CONTEXT),
+ * its contents are appended so agents automatically learn app-specific navigation.
  */
 export const SERVER_INSTRUCTIONS = `\
 You have tools to control a Roku device. Use the roku_ MCP tools for ALL Roku interaction. \
@@ -37,7 +52,7 @@ Do NOT fire long sequences of blind key presses. Press a few keys, then check th
 - To type into a search field, first navigate to the search screen, then use roku_type_text.
 - Use roku_press_key with the "times" parameter to press a key multiple times instead of making separate calls.
 - Back returns to the previous screen. Home exits the app entirely.
-`;
+` + (() => { const ctx = loadAppContext(); return ctx ? `\n\n## App-specific context\n\n${ctx}` : ''; })();
 
 /**
  * Content for CLAUDE.md Roku section, appended by `roku-mcp init`.
