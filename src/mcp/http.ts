@@ -54,7 +54,7 @@ const httpServer = createServer(async (req: IncomingMessage, res: ServerResponse
   await transport.handleRequest(req, res, body);
 });
 
-httpServer.listen(PORT, () => {
+httpServer.listen(PORT, '127.0.0.1', () => {
   console.error(`roku-mcp HTTP server running at http://localhost:${PORT}/mcp`);
   console.error(`Roku device: ${deviceIp}`);
 });
