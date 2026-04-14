@@ -10,11 +10,12 @@ Your coding agent can see what's on the Roku screen, send remote control input, 
 
 ## What it does
 
-- **Inspect the UI** — query the SceneGraph node tree to see what's displayed on screen
-- **Find elements** — CSS-like selectors against SceneGraph nodes (`HomePage HomeHeroCarousel`, `AppButton#play_button`)
+- **Inspect the UI** — query the SceneGraph node tree, take screenshots, find elements with CSS-like selectors
 - **Send input** — remote control keys, text entry
-- **Launch apps** — start channels with deep link parameters
-- **Query state** — device info, media player, active app, installed apps
+- **Launch and sideload** — start channels, deep link to content, deploy dev builds
+- **Test** — smoke tests, cert preflight checks, CPU sampling, console error monitoring
+- **Query state** — device info, media player, active app, installed apps, debug console
+- **App context** — drop a `roku-app.md` file in your project and every connected agent learns your app's navigation
 
 ## Configuration
 
@@ -174,8 +175,15 @@ npx roku-mcp ui tree --all-attrs
 
 # Find specific elements
 npx roku-mcp ui find "HomePage HomeHeroCarousel"
-npx roku-mcp ui find "BebopNavMenu BebopMenuButton#Home"
 npx roku-mcp ui find "AppLabel" --all-attrs
+
+# See what's focused, what screen you're on, or get raw XML
+npx roku-mcp ui focused
+npx roku-mcp ui screen
+npx roku-mcp ui source
+
+# Take a screenshot
+npx roku-mcp ui screenshot -o screen.png
 
 # Send key presses
 npx roku-mcp press Select
@@ -194,8 +202,18 @@ npx roku-mcp info app
 npx roku-mcp info apps
 npx roku-mcp info player
 
-# Raw XML source
-npx roku-mcp ui source
+# Debug console
+npx roku-mcp console log
+npx roku-mcp console log --filter "error"
+npx roku-mcp console send bt
+
+# Test runner
+npx roku-mcp test sideload-watch ./build.zip --duration 30000
+npx roku-mcp test smoke --content-id GG5H5XQ7R --media-type episode
+npx roku-mcp test cert-preflight
+npx roku-mcp test chanperf --duration 15000 --threshold 70
+npx roku-mcp test wait "HomeScreen" --timeout 10000
+npx roku-mcp test assert "#playButton" --assertion focused
 ```
 
 ### As a library
@@ -286,22 +304,6 @@ Agent: Clean install. Now running the smoke test with playback verification.
 Agent: All green. Build sideloaded cleanly, UI rendered in 2.3s, playback started in 8.7s.
 ```
 
-You can also run this entirely from the CLI for CI integration:
-
-```bash
-# Sideload and watch for errors
-npx roku-mcp test sideload-watch ./target/build.zip --duration 30000
-
-# Full smoke test with playback verification
-npx roku-mcp test smoke --content-id GG5H5XQ7R --media-type episode
-
-# Run cert preflight checklist before submission
-npx roku-mcp test cert-preflight
-
-# Sample CPU during playback
-npx roku-mcp test chanperf --duration 15000 --threshold 70
-```
-
 All test commands exit with code 1 on failure, making them CI-friendly.
 
 ## Using it in chat
@@ -311,32 +313,37 @@ You can talk to your Roku through your AI assistant. The agent uses the MCP tool
 ```
 You: Go to the browse screen, select the Action genre, and take a screenshot for me
 
-Agent: I'll navigate to the Browse screen. Let me press Back to reset focus,
-       then Left to open the nav menu.
+Agent: I'll take a screenshot to see where we are first.
 
-  → roku_press_key(key: "Back")
+  → roku_screenshot()
+
+Agent: We're on the Home screen. I'll open the nav menu and find Browse.
+
   → roku_press_key(key: "Left")
-  → roku_ui_tree(depth: 4)
+  → roku_screenshot()
 
-Agent: I can see the nav menu. Let me find Browse and select it.
+Agent: Nav menu is open. Browse is two items down.
 
   → roku_press_key(key: "Down", times: 2)
   → roku_press_key(key: "Select")
+  → roku_screenshot()
+
+Agent: We're on Browse. I can see genre rows — Action is 4 rows down.
+
   → roku_press_key(key: "Down", times: 4)
   → roku_press_key(key: "Select")
-
-Agent: We're on the Action genre list now.
-
   → roku_screenshot(save_path: "./screenshots/action_genre.png")
+
+Agent: Done — screenshot saved. We're on the Action genre grid.
 ```
 
-The agent can see the UI tree, understand what's on screen, navigate to where it needs to go, and save screenshots — all through natural conversation.
+The agent takes screenshots to see the screen, decides what keys to press, and verifies the result — all through natural conversation.
 
 ## How it works
 
-Roku devices expose an HTTP API called [ECP (External Control Protocol)](https://developer.roku.com/docs/developer-program/dev-tools/external-control-api.md) on port 8060. This tool calls ECP endpoints directly — no WebDriver, no Appium, no Selenium, no Java.
+Roku devices expose an HTTP API called [ECP (External Control Protocol)](https://developer.roku.com/docs/developer-program/dev-tools/external-control-api.md) on port 8060. roku-mcp uses [`@danecodes/roku-ecp`](https://www.npmjs.com/package/@danecodes/roku-ecp) to call ECP endpoints directly — no WebDriver, no Appium, no Selenium, no Java.
 
-The key endpoint is `GET /query/app-ui` which returns the full SceneGraph node tree as XML. This tool parses that XML and lets you query it with selectors.
+The key endpoint is `GET /query/app-ui` which returns the full SceneGraph node tree as XML. roku-ecp parses that XML and lets you query it with CSS-like selectors.
 
 ## Requirements
 
