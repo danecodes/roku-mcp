@@ -290,16 +290,16 @@ You can also run this entirely from the CLI for CI integration:
 
 ```bash
 # Sideload and watch for errors
-npx roku-dev test sideload-watch ./target/build.zip --duration 30000
+npx roku-mcp test sideload-watch ./target/build.zip --duration 30000
 
 # Full smoke test with playback verification
-npx roku-dev test smoke --content-id GG5H5XQ7R --media-type episode
+npx roku-mcp test smoke --content-id GG5H5XQ7R --media-type episode
 
 # Run cert preflight checklist before submission
-npx roku-dev test cert-preflight
+npx roku-mcp test cert-preflight
 
 # Sample CPU during playback
-npx roku-dev test chanperf --duration 15000 --threshold 70
+npx roku-mcp test chanperf --duration 15000 --threshold 70
 ```
 
 All test commands exit with code 1 on failure, making them CI-friendly.

@@ -20,7 +20,7 @@ const program = new Command();
 program
   .name('roku-dev')
   .description('CLI tools for AI agents and developers to interact with Roku devices')
-  .version('0.1.0')
+  .version('0.3.1')
   .option('-d, --device <ip>', 'Roku device IP address', '192.168.0.30');
 
 /* ------------------------------------------------------------------ */
