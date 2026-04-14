@@ -24,6 +24,30 @@ Set your Roku device IP address:
 - **CLI:** Use `--device <ip>` flag (defaults to `192.168.0.30`)
 - **Screenshots:** Set `ROKU_DEV_PASSWORD` if your dev password isn't `rokudev`
 
+### App context (optional)
+
+Drop a `roku-app.md` file in your project root to teach agents how to navigate your specific app:
+
+```markdown
+## Crunchyroll Navigation
+Left-side nav menu: Home, Browse, Simulcasts, My Lists, Settings.
+Press Left from any content screen to open it.
+Browse has genre rows — Select a genre to see the content grid.
+Search is accessible from the top of the nav menu.
+```
+
+The MCP server reads this file at startup and appends it to the instructions sent to every connected agent. No config needed — if the file exists, it's used.
+
+To use a different path, set the `ROKU_APP_CONTEXT` environment variable:
+
+```json
+{
+  "env": {
+    "ROKU_APP_CONTEXT": "/path/to/my-app-context.md"
+  }
+}
+```
+
 ## Quick start
 
 ### As an MCP server (Claude Code, Cursor, Windsurf, etc.)
@@ -177,7 +201,7 @@ npx roku-mcp ui source
 ### As a library
 
 ```typescript
-import { EcpClient, Key, parseUiXml, findElement } from 'roku-mcp';
+import { EcpClient, Key, parseUiXml, findElement } from '@danecodes/roku-mcp';
 
 const roku = new EcpClient('192.168.0.30');
 
