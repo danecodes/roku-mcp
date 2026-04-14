@@ -3,13 +3,13 @@
 import { createServer, IncomingMessage, ServerResponse } from 'http';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
-import { EcpClient } from '../core/ecp-client.js';
+import { EcpClient } from '@danecodes/roku-ecp';
 import { registerTools } from './register-tools.js';
 import { SERVER_INSTRUCTIONS } from '../instructions.js';
 
 const deviceIp = process.env.ROKU_DEVICE_IP ?? '192.168.0.30';
 const devPassword = process.env.ROKU_DEV_PASSWORD ?? 'rokudev';
-const client = new EcpClient(deviceIp, 8060, { devPassword });
+const client = new EcpClient(deviceIp, { devPassword });
 
 const PORT = parseInt(process.env.ROKU_MCP_PORT ?? '3141', 10);
 

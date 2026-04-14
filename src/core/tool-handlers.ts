@@ -5,14 +5,14 @@
  * server and the CLI, and tested in isolation with mock clients.
  */
 
-import { EcpClient } from './ecp-client.js';
+import type { EcpClient } from '@danecodes/roku-ecp';
 import {
   parseUiXml,
   findElement,
   findFocused,
-  formatTreePlain,
-} from './ui-tree.js';
-import { parseConsoleForIssues } from './console-utils.js';
+  formatTree,
+} from '@danecodes/roku-ecp';
+import { parseConsoleForIssues } from '@danecodes/roku-ecp';
 
 /* ------------------------------------------------------------------ */
 /*  Shared                                                            */
@@ -127,7 +127,7 @@ export async function waitFor(
         passed: true,
         message: `Element "${selector}" found after ${elapsed}ms`,
         elapsed_ms: elapsed,
-        element: formatTreePlain(el, { maxDepth: 0, allAttrs: true }),
+        element: formatTree(el, { maxDepth: 0, allAttrs: true }),
       };
     }
     const elapsed = Date.now() - start;
@@ -359,7 +359,7 @@ export async function focusedElement(
   const tree = await parseUiXml(xml);
   const focused = findFocused(tree);
   if (!focused) return '(no focused element found)';
-  return formatTreePlain(focused, { maxDepth: 0, allAttrs: true });
+  return formatTree(focused, { maxDepth: 0, allAttrs: true });
 }
 
 export async function screenName(

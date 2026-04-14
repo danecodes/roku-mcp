@@ -1,14 +1,9 @@
 #!/usr/bin/env node
 
 import { Command } from 'commander';
-import { EcpClient, Key } from '../core/ecp-client.js';
-import {
-  parseUiXml,
-  findElements,
-  formatTree,
-  formatTreePlain,
-  findFocused,
-} from '../core/ui-tree.js';
+import { EcpClient, Key, parseUiXml, findElements, findFocused } from '@danecodes/roku-ecp';
+import { formatTree } from '@danecodes/roku-ecp';
+import { formatTreeColored } from '../core/format-colored.js';
 import {
   sleep,
   waitFor,
@@ -55,9 +50,9 @@ ui.command('tree')
     };
 
     if (opts.plain) {
-      console.log(formatTreePlain(tree, formatOpts));
-    } else {
       console.log(formatTree(tree, formatOpts));
+    } else {
+      console.log(formatTreeColored(tree, formatOpts));
     }
   });
 
@@ -80,7 +75,7 @@ ui.command('find <selector>')
 
     console.log(`Found ${results.length} element(s):\n`);
     for (const node of results) {
-      const format = opts.plain ? formatTreePlain : formatTree;
+      const format = opts.plain ? formatTree : formatTreeColored;
       console.log(format(node, { maxDepth: 0, allAttrs: opts.allAttrs }));
     }
   });
@@ -107,7 +102,7 @@ ui.command('focused')
       console.log('(no focused element)');
       return;
     }
-    const format = opts.plain ? formatTreePlain : formatTree;
+    const format = opts.plain ? formatTree : formatTreeColored;
     console.log(format(focused, { maxDepth: 0, allAttrs: true }));
   });
 
@@ -127,7 +122,7 @@ ui.command('screenshot')
   .option('--password <password>', 'Dev mode password', 'rokudev')
   .action(async (opts, cmd) => {
     const deviceIp = cmd.parent!.parent!.opts().device;
-    const client = new EcpClient(deviceIp, 8060, { devPassword: opts.password });
+    const client = new EcpClient(deviceIp, { devPassword: opts.password });
     const buf = await client.takeScreenshot();
     const fs = await import('fs');
     fs.writeFileSync(opts.output, buf);
@@ -309,7 +304,7 @@ test
   .option('--duration <ms>', 'Console watch duration in ms', parseInt, 30000)
   .action(async (zip, opts, cmd) => {
     const deviceIp = cmd.parent!.parent!.opts().device;
-    const client = new EcpClient(deviceIp, 8060, { devPassword: cmd.parent!.parent!.opts().password ?? 'rokudev' });
+    const client = new EcpClient(deviceIp, { devPassword: cmd.parent!.parent!.opts().password ?? 'rokudev' });
     console.error(`Sideloading ${zip}...`);
     const result = await sideloadAndWatch(client, zip, { duration: opts.duration });
     console.log(JSON.stringify(result, null, 2));

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseUiXml, findElement, findElements, findFocused } from '../core/ui-tree.js';
+import { parseUiXml, findElement, findElements, findFocused } from '@danecodes/roku-ecp';
 
 /* ------------------------------------------------------------------ */
 /*  Fixtures                                                           */

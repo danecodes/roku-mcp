@@ -19,7 +19,7 @@ import {
   certPreflight,
   chanperfSample,
 } from '../../core/tool-handlers.js';
-import type { EcpClient } from '../../core/ecp-client.js';
+import type { EcpClient } from '@danecodes/roku-ecp';
 
 describe('All Tools Validation', () => {
   let client: EcpClient;

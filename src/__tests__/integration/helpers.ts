@@ -1,10 +1,4 @@
-import { EcpClient, Key } from '../../core/ecp-client.js';
-import {
-  parseUiXml,
-  findElement,
-  findElements,
-  findFocused,
-} from '../../core/ui-tree.js';
+import { EcpClient, Key, parseUiXml, findElement, findElements, findFocused } from '@danecodes/roku-ecp';
 import {
   waitFor,
   assertElement,
@@ -27,7 +21,7 @@ export function createClient(): EcpClient {
   const ip = process.env.ROKU_IP;
   if (!ip) throw new Error('Set ROKU_IP environment variable to your Roku device IP');
   const password = process.env.ROKU_DEV_PASSWORD ?? 'rokudev';
-  return new EcpClient(ip, 8060, { devPassword: password });
+  return new EcpClient(ip, { devPassword: password });
 }
 
 export async function getUiTree(client: EcpClient) {

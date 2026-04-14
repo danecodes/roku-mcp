@@ -1,3 +1,4 @@
+// Re-export everything from roku-ecp
 export {
   EcpClient,
   Key,
@@ -6,15 +7,40 @@ export {
   type ActiveApp,
   type MediaPlayerState,
   type InstalledApp,
-} from './ecp-client.js';
+  type ChanperfSample,
+  type EcpClientOptions,
+  EcpSideloadError,
+  EcpScreenshotError,
+} from '@danecodes/roku-ecp';
 
 export {
   parseUiXml,
   findElement,
   findElements,
+  findFocused,
   formatTree,
-  formatTreePlain,
   type UiNode,
-  type FindOptions,
   type FormatOptions,
-} from './ui-tree.js';
+} from '@danecodes/roku-ecp';
+
+export {
+  parseConsoleForIssues,
+  type ConsoleIssues,
+} from '@danecodes/roku-ecp';
+
+export {
+  EcpHttpError,
+  EcpTimeoutError,
+  EcpAuthError,
+} from '@danecodes/roku-ecp';
+
+export {
+  waitForElement,
+  waitForFocus,
+  waitForApp,
+  waitForText,
+  type WaitOptions,
+} from '@danecodes/roku-ecp';
+
+// roku-mcp-specific: chalk-colored tree formatter
+export { formatTreeColored } from './format-colored.js';

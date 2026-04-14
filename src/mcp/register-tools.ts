@@ -1,11 +1,11 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
-import { EcpClient, Key } from '../core/ecp-client.js';
+import { EcpClient, Key } from '@danecodes/roku-ecp';
 import {
   parseUiXml,
   findElements,
-  formatTreePlain,
-} from '../core/ui-tree.js';
+  formatTree,
+} from '@danecodes/roku-ecp';
 import {
   waitFor,
   assertElement,
@@ -29,7 +29,7 @@ export function registerTools(server: McpServer, client: EcpClient): void {
     async ({ depth, all_attrs }) => {
       const xml = await client.queryAppUi();
       const tree = await parseUiXml(xml);
-      const text = formatTreePlain(tree, { maxDepth: depth, allAttrs: all_attrs });
+      const text = formatTree(tree, { maxDepth: depth, allAttrs: all_attrs });
       return { content: [{ type: 'text', text }] };
     }
   );
@@ -57,7 +57,7 @@ export function registerTools(server: McpServer, client: EcpClient): void {
       }
       const lines = [`Found ${results.length} element(s) matching "${selector}":\n`];
       for (const node of results) {
-        lines.push(formatTreePlain(node, { maxDepth: 1, allAttrs: all_attrs }));
+        lines.push(formatTree(node, { maxDepth: 1, allAttrs: all_attrs }));
         lines.push('');
       }
       return { content: [{ type: 'text', text: lines.join('\n') }] };
@@ -194,9 +194,9 @@ export function registerTools(server: McpServer, client: EcpClient): void {
     async ({ action, times }) => {
       const count = times ?? 1;
       for (let i = 0; i < count; i++) {
-        if (action === 'up') await client.volumeUp();
-        else if (action === 'down') await client.volumeDown();
-        else await client.volumeMute();
+        if (action === 'up') await client.keypress(Key.VolumeUp);
+        else if (action === 'down') await client.keypress(Key.VolumeDown);
+        else await client.keypress(Key.VolumeMute);
       }
       return { content: [{ type: 'text', text: `Volume ${action}${count > 1 ? ` x${count}` : ''}` }] };
     }

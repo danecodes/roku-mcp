@@ -6,7 +6,7 @@ import {
   waitFor,
   assertElement,
 } from './helpers.js';
-import type { EcpClient } from '../../core/ecp-client.js';
+import type { EcpClient } from '@danecodes/roku-ecp';
 
 describe('Search / Text Input', () => {
   let client: EcpClient;

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseConsoleForIssues } from '../core/console-utils.js';
+import { parseConsoleForIssues } from '@danecodes/roku-ecp';
 
 describe('parseConsoleForIssues', () => {
   it('returns empty categories for clean output', () => {
