@@ -200,8 +200,10 @@ npx roku-mcp ui source
 
 ### As a library
 
+The ECP client is published separately as [`@danecodes/roku-ecp`](https://www.npmjs.com/package/@danecodes/roku-ecp) — use that if you want to control Roku devices from your own code:
+
 ```typescript
-import { EcpClient, Key, parseUiXml, findElement } from '@danecodes/roku-mcp';
+import { EcpClient, Key, parseUiXml, findElement } from '@danecodes/roku-ecp';
 
 const roku = new EcpClient('192.168.0.30');
 
@@ -211,7 +213,7 @@ await roku.press(Key.Select);
 
 // Inspect the UI
 const xml = await roku.queryAppUi();
-const tree = await parseUiXml(xml);
+const tree = parseUiXml(xml);
 const button = findElement(tree, 'AppButton#play_button');
 console.log(button?.attrs.focused); // "true"
 console.log(button?.attrs.text);    // "Play"

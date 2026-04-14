@@ -13,10 +13,6 @@
     "url": "git+https://github.com/danecodes/roku-mcp.git"
   },
   "author": "Dane Hesseldahl",
-  "exports": {
-    ".": "./dist/core/index.js",
-    "./mcp": "./dist/mcp/index.js"
-  },
   "scripts": {
     "build": "tsc",
     "dev": "tsx src/cli/index.ts",
