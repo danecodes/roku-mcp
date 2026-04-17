@@ -254,6 +254,18 @@ Find elements using CSS-like selectors against SceneGraph node names:
 | `LayoutGroup > AppLabel` | `AppLabel` that is a direct child of `LayoutGroup` |
 | `AppButton:nth-child(1)` | First `AppButton` among siblings |
 | `CollectionModule + CollectionModule` | `CollectionModule` immediately after another |
+| `A ~ B` | General sibling — all `B` after `A` |
+| `[focused="true"]` | Attribute value match |
+| `[text*="Log"]` | Attribute contains substring |
+| `[text^="Episode"]` | Attribute starts with |
+| `[uri$=".png"]` | Attribute ends with |
+| `[visible]` | Attribute exists |
+| `AppButton:has(AppLabel[text="Play"])` | Parent that contains a matching child |
+| `AppButton:not([focused="true"])` | Negation |
+| `:first-child`, `:last-child`, `:only-child` | Positional pseudo-classes |
+| `:empty` | Nodes with no children |
+| `LinearCard, SlantedCard` | Comma groups — match either |
+| `*` | Universal — matches any node |
 
 ## Smoke test demo
 

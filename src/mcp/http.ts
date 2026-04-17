@@ -41,7 +41,7 @@ const httpServer = createServer(async (req: IncomingMessage, res: ServerResponse
   }
 
   const server = new McpServer(
-    { name: 'roku-mcp', version: '0.3.2' },
+    { name: 'roku-mcp', version: '0.4.0' },
     { instructions: SERVER_INSTRUCTIONS },
   );
   registerTools(server, client);

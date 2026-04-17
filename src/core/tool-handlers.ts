@@ -11,6 +11,8 @@ import {
   findElement,
   findFocused,
   formatTree,
+  waitForElement,
+  EcpTimeoutError,
 } from '@danecodes/roku-ecp';
 import { parseConsoleForIssues } from '@danecodes/roku-ecp';
 
@@ -113,30 +115,28 @@ export async function waitFor(
   selector: string,
   options?: { timeout?: number; interval?: number }
 ): Promise<WaitForResult> {
-  const maxMs = options?.timeout ?? 10000;
-  const pollMs = options?.interval ?? 500;
   const start = Date.now();
+  const getTree = async () => parseUiXml(await client.queryAppUi());
 
-  while (true) {
-    const xml = await client.queryAppUi();
-    const tree = await parseUiXml(xml);
-    const el = findElement(tree, selector);
-    if (el) {
-      const elapsed = Date.now() - start;
-      return {
-        passed: true,
-        message: `Element "${selector}" found after ${elapsed}ms`,
-        elapsed_ms: elapsed,
-        element: formatTree(el, { maxDepth: 0, allAttrs: true }),
-      };
-    }
+  try {
+    const el = await waitForElement(getTree, selector, {
+      timeout: options?.timeout ?? 10000,
+      interval: options?.interval ?? 500,
+    });
     const elapsed = Date.now() - start;
-    if (elapsed >= maxMs) {
+    return {
+      passed: true,
+      message: `Element "${selector}" found after ${elapsed}ms`,
+      elapsed_ms: elapsed,
+      element: formatTree(el, { maxDepth: 0, allAttrs: true }),
+    };
+  } catch (err) {
+    if (err instanceof EcpTimeoutError) {
       throw new Error(
-        `Timeout after ${maxMs}ms: no element matching "${selector}" appeared`
+        `Timeout after ${options?.timeout ?? 10000}ms: no element matching "${selector}" appeared`
       );
     }
-    await sleep(pollMs);
+    throw err;
   }
 }
 
@@ -270,13 +270,13 @@ export async function smokeTest(
     return { passed: false, message: 'FAIL: Could not launch app', steps };
   }
 
-  // Step 2: Wait for UI
+  // Step 2: Wait for UI (checks for non-empty scene — too specific for waitForElement)
   const uiStart = Date.now();
   let uiAppeared = false;
   while (Date.now() - uiStart < uiMaxMs) {
     try {
       const xml = await client.queryAppUi();
-      const tree = await parseUiXml(xml);
+      const tree = parseUiXml(xml);
       if (tree.tag !== 'scene' || tree.children.length > 0) {
         uiAppeared = true;
         break;
